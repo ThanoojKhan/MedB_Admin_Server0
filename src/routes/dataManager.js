@@ -6,7 +6,7 @@ const router = Router();
 
 // ------------- ADMIN POST ---------------
 router
-    .route('/adminPost')
+    .route('/doctor')
     .get(adminPostController.getPosts)
     .post(uploadMiddleware, adminPostController.uploadPost)
     .patch(adminPostController.updatePost)

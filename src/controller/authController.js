@@ -6,34 +6,53 @@ const env = require('../util/validateEnv');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const ms = require('ms');
+const Yup = require("yup");
 
 // Check if running in development mode
 const dev = env.NODE_ENV === "development";
 
-// Create new admin
+// Yup schema
+const adminValidationSchema = Yup.object().shape({
+    email: Yup.string()
+        .email("Invalid email address format")
+        .required("Email is required"),
+    password: Yup.string()
+        .min(6, "Password must be at least 6 characters long")
+        .matches(
+            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/,
+            "Password must include at least one uppercase letter, one lowercase letter, one digit, and one special character"
+        )
+        .required("Password is required"),
+});
+
 exports.newAdmin = catchAsync(async (req, res) => {
     const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
-        throw new AppError({ statusCode: 400, message: 'Email and password are required' });
+    try {
+        await adminValidationSchema.validate({ email, password }, { abortEarly: false });
+    } catch (validationError) {
+        const errors = validationError.inner.map(err => err.message); 
+        throw new AppError({
+            statusCode: 400,
+            message: "Validation Error",
+            errors, 
+        });
     }
 
     // Check if admin with the given email already exists
     const isExist = await adminModel.exists({ email });
     if (isExist) {
-        throw new AppError({ statusCode: 403, message: 'Email already exists' });
+        throw new AppError({ statusCode: 403, message: "Email already exists" });
     }
 
-    // Hash the password
     const hashPassword = await bcrypt.hash(password, 10);
 
     await adminModel.create({
         email,
-        password: hashPassword
+        password: hashPassword,
     });
 
-    res.sendStatus(201);
+    res.status(201).json({ message: "Admin created successfully" });
 });
 
 // Login verification
@@ -71,16 +90,6 @@ exports.login = catchAsync(async (req, res, next) => {
     });
 
     return res.status(200).json({ accessToken });
-});
-
-// Reset password
-exports.resetPassword = catchAsync(async (req, res) => {
-    const { password } = req.body;
-    if (!password) throw new AppError({ statusCode: 400, message: 'Password required' });
-
-    const hashPassword = await bcrypt.hash(password, 10);
-    await adminModel.updateOne({ _id: req.admin._id }, { $set: { password: hashPassword } });
-    res.sendStatus(200);
 });
 
 // Refresh accessToken
