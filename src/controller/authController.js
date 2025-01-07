@@ -18,10 +18,6 @@ const adminValidationSchema = Yup.object().shape({
         .required("Email is required"),
     password: Yup.string()
         .min(6, "Password must be at least 6 characters long")
-        .matches(
-            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/,
-            "Password must include at least one uppercase letter, one lowercase letter, one digit, and one special character"
-        )
         .required("Password is required"),
 });
 
@@ -31,11 +27,11 @@ exports.newAdmin = catchAsync(async (req, res) => {
     try {
         await adminValidationSchema.validate({ email, password }, { abortEarly: false });
     } catch (validationError) {
-        const errors = validationError.inner.map(err => err.message); 
+        const errors = validationError.inner.map(err => err.message);
         throw new AppError({
             statusCode: 400,
             message: "Validation Error",
-            errors, 
+            errors,
         });
     }
 
