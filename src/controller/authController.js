@@ -9,7 +9,7 @@ const ms = require('ms');
 const Yup = require("yup");
 
 // Check if running in development mode
-const dev = env.NODE_ENV === "development";
+const dev = env.NODE_ENV === "production";
 
 // Yup schema
 const adminValidationSchema = Yup.object().shape({
