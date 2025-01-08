@@ -7,28 +7,38 @@ const doctorModel = require("../models/adminPost/doctorModel");
 
 // Get Doctors
 exports.getDoctors = catchAsync(async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-    const skip = (pageNumber - 1) * limitNumber;
+    const { page } = req.params;
+    const { query } = req.query;
+
+    const limit = 10;
+    const skip = (parseInt(page) - 1) * limit;
 
     try {
-        const doctors = await doctorModel
-            .find({})
+        const searchFilter = {
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { specialization: { $regex: query, $options: 'i' } },
+                { qualification: { $regex: query, $options: 'i' } },
+            ]
+        };
+
+        const doctors = await doctorModel.find(searchFilter)
             .skip(skip)
-            .limit(limitNumber)
-            .sort({ createdAt: -1 });
+            .limit(limit);
 
-        const totalDoctors = await doctorModel.countDocuments({});
+        const total = await doctorModel.countDocuments(searchFilter);
 
-        res.status(200).json({
+        res.json({
             doctors,
-            total: totalDoctors,
+            total,
         });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch doctors", error: error.message });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occurred while fetching doctors.' });
     }
 });
+
+
 
 // Add post
 exports.addDoctor = catchAsync(async (req, res) => {
@@ -114,7 +124,7 @@ const deleteCloudinaryFile = async (fileUrl) => {
 
 // Update post
 exports.updateDoctor = catchAsync(async (req, res) => {
-   
+
     const { id } = req.params;
     const { name, age, specialization, qualification, contactNumber, registrationNumber } = req.body;
 
