@@ -4,18 +4,20 @@ const uploadMiddleware = require('../middleware/uploadMiddleware');
 
 const router = Router();
 
-// ------------- ADMIN ---------------
 router
     .route('/doctor')
-    .post(uploadMiddleware, adminPostController.addDoctor)
-    .patch(adminPostController.updateDoctor)
+    .post(uploadMiddleware, adminPostController.addDoctor);
 
 router
     .route('/doctor/:page')
-    .get(adminPostController.getDoctors)
+    .get(adminPostController.getDoctors);
 
 router
     .route('/doctor/:id')
-    .delete(adminPostController.deleteDoctor)
+    .delete(adminPostController.deleteDoctor);
+
+router
+    .route('/editDoctor/:id')
+    .put(uploadMiddleware, adminPostController.updateDoctor);
 
 module.exports = router;

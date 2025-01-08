@@ -114,6 +114,7 @@ const deleteCloudinaryFile = async (fileUrl) => {
 
 // Update post
 exports.updateDoctor = catchAsync(async (req, res) => {
+   
     const { id } = req.params;
     const { name, age, specialization, qualification, contactNumber, registrationNumber } = req.body;
 

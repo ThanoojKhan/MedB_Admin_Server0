@@ -28,7 +28,7 @@ app.use(rateLimiter);
 app.use(
   cors({
     origin: env.NODE_ENV === 'development' ? env.DEV_URL : env.PRODUCTION_URL.split(','),
-    methods: ['GET', 'POST', 'DELETE', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
